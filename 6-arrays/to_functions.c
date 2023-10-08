@@ -18,6 +18,7 @@ void times3(int a[], int len)
     }
 }
 
+// Array with a pre-set length
 void times4(int a[5], int len)
 {
     for (int i = 0; i < len; i++)
