@@ -86,7 +86,8 @@ int foo(void)
 ### 5+11 Pointers
 
 #### 5.1 Memory and Variables
-To printf out the address of a pointer, use `%p`.
+To printf out the address of a pointer, use `%p` and typecast it to a void
+pointer!
 
 ```c
 #include <stdio.h>
@@ -259,3 +260,193 @@ void print_2D_array(int a[][3])
 ```
 
 ### 7 Strings
+#### 7.2 String Variables
+Declare strings using a char pointer.
+
+```c
+#include <stdio.h>
+
+int main(void)
+{
+    char *s = "Hello World!";
+
+    printf("%s\n", s);
+}
+```
+
+#### 7.3 String Variables as Arrays
+You can use also declare strings as an array.
+
+```c
+#include <stdio.h>
+
+int main(void)
+{
+    char s[12] = "Hello World!";
+
+    // or, if we were properly lazy and wanted to have the compiler figure out
+    // the length for us
+
+    char t[] = "Goodbye world…";
+
+    // You can use array notation to access characters in a string
+    // This will work even if using a char* type.
+    for (int i = 0; i < 12; i++)
+    {
+        printf("%c\n", s[i]);
+    }
+}
+```
+#### 7.4 String Initializers
+We've already seen some examples of initializing string variables with string
+literals:
+
+```c
+char *s = "Hello World!";
+char s[] = "Goodbye World…";
+```
+
+But these two are subtly different.
+
+```c
+#include <stdio.h>
+
+int main(void)
+{
+    // This one is a pointer to a string literal
+    char *s = "Hello World!";
+    // If you try to mutate it with array notation, it is undefined behaviour
+    // s[0] = 'z';
+
+    // Declaring an array is different, this one is a mutable *copy* of the
+    // string that we can change at will.
+    char t[] = "Goodbye World!…";
+    t[0] = 'z'; // no problem
+
+    printf("%s\n", t);
+}
+```
+
+#### 7.5 Getting String Length
+You can get the string length in bytes by including the `string.h` header file,
+which has the `strlen()` function.
+
+```c
+// You can't get string length with a builtin mechanic, as C doesn't track it
+// You *can*, however, use the function `strlen()` from `<string.h>` to compute
+// the length of any string in bytes.
+
+#include <stdio.h>
+#include <string.h>
+
+int main(void)
+{
+    char *s = "Hello World!";
+
+    printf("The string is %zu bytes long.\n", strlen(s));
+}
+```
+
+#### 7.7 Copying a String
+You can deep copy a string by including the `string.h` header file and using
+the `strcpy()` function.
+
+```c
+// Copying a string variable merely copys the pointer to the string
+// To fully copy a string, use strcpy() from string.h
+
+#include <stdio.h>
+#include <string.h>
+
+int main(void)
+{
+    char s[] = "Hello World!";
+    char t[100];    // Each character is one byte, so plenty of room
+
+    // This makes a copy of a string!
+    // It looks like it's Intel `mov` syntax: dest, src
+    strcpy(t, s);
+
+    // We modify t
+    t[0] = 'z';
+
+    // And s remains unaffected because it's a different string
+    printf("%s\n", s);
+
+    // But t has changed
+    printf("%s\n", t);
+}
+```
+
+### 8 Structs
+#### 8.1 Declaring a Struct
+You can declare a struct like so:
+
+```c
+struct car {
+    char *name;
+    float price;
+    int speed;
+};
+```
+
+Initialize it and set its values like so:
+
+```c
+struct car saturn;  // Variable "saturn" of type "struct car"
+saturn.name = "Saturn SL/2";
+saturn.price = 15999.99;
+saturn.speed = 175;
+```
+
+#### 8.2 Struct Initializers
+Using our example for before, we can initialize a struct by setting all its
+fields in the same order that it's declared in:
+
+```c
+struct car saturn = {"Saturn SL/2", 16000.99, 175};
+```
+
+Or, we can be more specific using the `.NAME=VALUE` syntax:
+
+```c
+struct car saturn = {.speed=175, .name="Saturn SL/2"};
+```
+
+#### 8.3 Passing Structs to Functions
+Structs must (or should?) be passed as a pointer in functions.
+
+Don't forget that to access a pointer's properties it's easier to use arrow
+syntax `strct->value`.
+
+```c
+#include <stdio.h>
+
+struct car {
+    char *name;
+    float price;
+    int speed;
+};
+
+void set_price(struct car *c, float price)
+{
+    // Works, but is ugly. Use the arrow operator.
+    // (*c).price = price;
+
+    // Proper way:
+    c->price = price;
+}
+
+int main(void)
+{
+    struct car saturn = {.speed=175, .name="Saturn SL/2"};
+
+    // Pass a pointer to this struct car, along with a new, more realistic
+    // price:
+    set_price(&saturn, 799.99);
+
+    printf("Price: %f\n", saturn.price);
+}
+```
+
+## 9 File Input/Output
